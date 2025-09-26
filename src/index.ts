@@ -3,7 +3,10 @@ import { hydrate } from '@grammyjs/hydrate';
 import { Config } from './config/config.js';
 import { logger } from './utils/logger.js';
 import { type MyContext } from './types/index.js';
-import { startCommand } from './commands/index.js';
+import { startCommand, statsCommand, helpCommand } from './commands/index.js';
+import { Database } from './database/connection.js';
+import { userMiddleware } from './middleware/user.middleware.js';
+import { UserService } from './services/user.service.js';
 
 const bot = new Bot<MyContext>(Config.getBotToken());
 
@@ -18,18 +21,33 @@ if (Config.isDev()) {
 // Использование hydrate для обработки обновлений
 bot.use(hydrate());
 
+// Middleware для автоматической регистрации пользователей
+bot.use(userMiddleware());
+
 // Установка команд
 await bot.api.setMyCommands([
   { command: 'start', description: 'Начать работу' },
+  { command: 'stats', description: 'Статистика бота' },
   { command: 'help', description: 'Помощь' },
 ]);
 
 // Ответ на команды
 bot.command('start', startCommand);
+bot.command('stats', statsCommand);
+bot.command('help', helpCommand);
 
 // Ответ на любое сообщение
-bot.on('message:text', (ctx) => {
-  ctx.reply(ctx.message.text);
+bot.on('message:text', async (ctx) => {
+  if (ctx.user) {
+    // Обновляем активность пользователя при любом сообщении
+    try {
+      await UserService.updateLastActivity(ctx.user.telegram_id);
+    } catch (error) {
+      logger.error('Ошибка обновления активности:', error);
+    }
+  }
+
+  await ctx.reply(`Вы написали: ${ctx.message.text}`);
 });
 
 // Обработайте другие сообщения.
@@ -77,12 +95,29 @@ bot.catch((err) => {
 // Функция запуска бота
 async function startBot() {
   try {
-    bot.start();
-    console.log('Bot started');
+    // Инициализируем базу данных
+    await Database.initialize();
+
+    // Запускаем бота
+    await bot.start();
+    logger.info('Бот успешно запущен');
   } catch (error) {
-    console.error('Error in startBot:', error);
+    logger.error('Ошибка запуска бота:', error);
     process.exit(1);
   }
 }
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  logger.info('Получен сигнал SIGINT, завершаем работу...');
+  await Database.close();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  logger.info('Получен сигнал SIGTERM, завершаем работу...');
+  await Database.close();
+  process.exit(0);
+});
 
 startBot();
