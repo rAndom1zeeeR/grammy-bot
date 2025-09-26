@@ -1,16 +1,17 @@
 import { Bot, GrammyError, HttpError } from 'grammy';
 import { hydrate } from '@grammyjs/hydrate';
 import { Config } from './config/config.js';
+import { SHUTDOWN_TIMEOUT } from './config/const.js';
 import { logger } from './utils/logger.js';
 import { type MyContext } from './types/index.js';
-import { startCommand } from './commands/index.js';
-import { SHUTDOWN_TIMEOUT } from './config/const.js';
 import {
   messageRateLimit,
   commandRateLimit,
 } from './middleware/rate-limit.middleware.js';
 import { userMiddleware } from './middleware/user.middleware.js';
+import { startCommand, helpCommand } from './commands/index.js';
 
+// Создание бота
 const bot = new Bot<MyContext>(Config.getBotToken());
 
 // Dev логирование
@@ -36,7 +37,7 @@ bot.use(userMiddleware);
 
 // Ответ на команды
 bot.command('start', commandRateLimit, startCommand);
-// bot.command('help', commandRateLimit, helpCommand);
+bot.command('help', commandRateLimit, helpCommand);
 
 // Ответ на любое сообщение
 bot.on('message:text', (ctx) => {

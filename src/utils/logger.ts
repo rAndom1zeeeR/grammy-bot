@@ -35,8 +35,20 @@ const transports: winston.transport[] = [
   }),
 ];
 
-// Добавляем файловые логи только если не в dev режиме
-if (!isDev) {
+// Добавляем файловые логи ВСЕГДА (и в dev, и в production)
+if (isDev) {
+  // В dev режиме - простые файлы без ротации
+  transports.push(
+    new winston.transports.File({
+      filename: errorLog,
+      level: 'error',
+    }),
+    new winston.transports.File({
+      filename: combinedLog,
+    })
+  );
+} else {
+  // В production - с ротацией
   const DailyRotateFile = require('winston-daily-rotate-file');
 
   transports.push(
