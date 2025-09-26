@@ -4,6 +4,7 @@ import { Config } from './config/config.js';
 import { logger } from './utils/logger.js';
 import { type MyContext } from './types/index.js';
 import { startCommand } from './commands/index.js';
+import { SHUTDOWN_TIMEOUT } from './config/const.js';
 
 const bot = new Bot<MyContext>(Config.getBotToken());
 
@@ -31,9 +32,6 @@ bot.command('start', startCommand);
 bot.on('message:text', (ctx) => {
   ctx.reply(ctx.message.text);
 });
-
-// Обработайте другие сообщения.
-// bot.on('message', (ctx) => ctx.reply('Получил другое сообщение!'));
 
 // Обработка ошибок согласно документации
 bot.catch((err) => {
@@ -74,13 +72,50 @@ bot.catch((err) => {
   }
 });
 
+// Graceful shutdown
+const gracefulShutdown = async (signal: string) => {
+  logger.info(`${signal} received, shutting down gracefully`);
+
+  // Таймаут для принудительного завершения
+  const timeout = setTimeout(() => {
+    logger.error('Shutdown timeout, forcing exit');
+    process.exit(1);
+  }, SHUTDOWN_TIMEOUT);
+
+  try {
+    await bot.stop();
+    clearTimeout(timeout);
+    logger.info('Bot stopped successfully');
+    process.exit(0);
+  } catch (error) {
+    clearTimeout(timeout);
+    logger.error('Error during shutdown:', error);
+    process.exit(1);
+  }
+};
+
+// Обработка сигналов завершения
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Обработка необработанных исключений
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  gracefulShutdown('uncaughtException');
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  gracefulShutdown('unhandledRejection');
+});
+
 // Функция запуска бота
 async function startBot() {
   try {
     bot.start();
-    console.log('Bot started');
+    logger.info('Bot started successfully');
   } catch (error) {
-    console.error('Error in startBot:', error);
+    logger.error('Error in startBot:', error);
     process.exit(1);
   }
 }

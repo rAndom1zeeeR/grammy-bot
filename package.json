@@ -19,8 +19,9 @@
     "@grammyjs/hydrate": "^1.6.0",
     "dotenv": "^17.2.2",
     "grammy": "^1.38.2",
+    "typescript": "^5.9.2",
     "winston": "^3.17.0",
-    "zod": "^4.1.11",
-    "typescript": "^5.9.2"
+    "winston-daily-rotate-file": "^5.0.0",
+    "zod": "^4.1.11"
   }
 }
