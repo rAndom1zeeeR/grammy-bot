@@ -10,9 +10,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=grammy_bot
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     networks:
       - grammy-network
     healthcheck:
@@ -28,12 +28,17 @@ services:
     container_name: grammy-bot
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '${PORT}:3000'
     volumes:
       - ./logs:/app/logs
     environment:
-      - NODE_ENV=production
-      - DATABASE_URL=postgresql://postgres:password@postgres:5432/grammy_bot
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${PORT}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - DATABASE_URL=${DATABASE_URL}
+      - BOT_TOKEN=${BOT_TOKEN}
+      - BOT_USERNAME=${BOT_USERNAME}
+      - ADMIN_TELEGRAM_IDS=${ADMIN_TELEGRAM_IDS}
     env_file:
       - .env
     depends_on:

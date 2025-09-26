@@ -15,4 +15,8 @@ export class Config {
   static getLogLevel(): string {
     return config.LOG_LEVEL || 'info';
   }
+
+  static getDatabaseUrl(): string {
+    return config.DATABASE_URL;
+  }
 }

@@ -2,8 +2,8 @@ import { Bot, GrammyError, HttpError } from 'grammy';
 import { hydrate } from '@grammyjs/hydrate';
 import { Config } from './config/config.js';
 import { logger } from './utils/logger.js';
-import { startCommand } from './commands/index.js';
 import { type MyContext } from './types/index.js';
+import { startCommand } from './commands/index.js';
 
 const bot = new Bot<MyContext>(Config.getBotToken());
 
