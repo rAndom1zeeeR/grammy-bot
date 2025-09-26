@@ -5,6 +5,11 @@ import { logger } from './utils/logger.js';
 import { type MyContext } from './types/index.js';
 import { startCommand } from './commands/index.js';
 import { SHUTDOWN_TIMEOUT } from './config/const.js';
+import {
+  messageRateLimit,
+  commandRateLimit,
+} from './middleware/rate-limit.middleware.js';
+import { userMiddleware } from './middleware/user.middleware.js';
 
 const bot = new Bot<MyContext>(Config.getBotToken());
 
@@ -25,8 +30,13 @@ await bot.api.setMyCommands([
   { command: 'help', description: 'Помощь' },
 ]);
 
+// Применяем rate limiting
+bot.use(messageRateLimit);
+bot.use(userMiddleware);
+
 // Ответ на команды
-bot.command('start', startCommand);
+bot.command('start', commandRateLimit, startCommand);
+// bot.command('help', commandRateLimit, helpCommand);
 
 // Ответ на любое сообщение
 bot.on('message:text', (ctx) => {

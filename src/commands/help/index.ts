@@ -1,7 +1,7 @@
 import type { MyContext } from '../../types/index.js';
 import { logger } from '../../utils/logger.js';
 
-export const startCommand = async (ctx: MyContext) => {
+export const helpCommand = async (ctx: MyContext) => {
   if (!ctx.from) {
     return ctx.reply('Context info is not available');
   }
@@ -9,15 +9,15 @@ export const startCommand = async (ctx: MyContext) => {
   const { id, first_name, username } = ctx.from;
 
   try {
-    await ctx.reply('Hello, ' + username + '!');
+    await ctx.reply('Help, ' + username + '!');
 
-    logger.info('Start command executed', {
+    logger.info('Help command executed', {
       telegramId: id,
       first_name,
       username,
     });
   } catch (error) {
-    logger.error('Start command error', {
+    logger.error('Help command error', {
       error: error instanceof Error ? error.message : String(error),
       telegramId: id,
       username,
