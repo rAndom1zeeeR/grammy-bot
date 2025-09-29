@@ -1,7 +1,6 @@
 import { Bot, GrammyError, HttpError } from 'grammy';
 import { hydrate } from '@grammyjs/hydrate';
 import { Config } from './config/config.js';
-import { SHUTDOWN_TIMEOUT } from './config/const.js';
 import { logger } from './utils/logger.js';
 import { type MyContext } from './types/index.js';
 import {
@@ -10,6 +9,9 @@ import {
 } from './middleware/rate-limit.middleware.js';
 import { userMiddleware } from './middleware/user.middleware.js';
 import { startCommand, helpCommand } from './commands/index.js';
+
+// Добавить таймаут для shutdown
+export const SHUTDOWN_TIMEOUT = 10000; // 10 секунд
 
 // Создание бота
 const bot = new Bot<MyContext>(Config.getBotToken());

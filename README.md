@@ -7,7 +7,7 @@ pnpm add @grammyjs/hydrate
 pnpm add -D typescript
 pnpm exec tsc --init
 pnpm add -D @types/node
-pnpm add -D tsx nodemon
+pnpm add -D tsx
 pnpm add dotenv
 pnpm approve-builds
 pnpm add winston
